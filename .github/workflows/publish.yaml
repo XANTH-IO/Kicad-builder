@@ -24,13 +24,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Prepare Path
+        run: |
+          repo_l=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
+          echo "uri=ghcr.io/${repo_l}" > $GITHUB_ENV
+
       - name: Build untagged
         uses: docker/build-push-action@v6
         if: github.ref_type != 'tag'
         with:
           context: .
           push: false
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: ${{ env.uri }}:latest
 
       - name: Build and push tagged version
         uses: docker/build-push-action@v6
@@ -38,7 +43,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+          tags: ${{ env.uri }}:${{ github.ref_name }}
 
       - name: Build and push latest
         uses: docker/build-push-action@v6
@@ -46,4 +51,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: ${{ env.uri }}:latest
